@@ -67,6 +67,70 @@ We consider these cases to cover the problem.
     7  i8    6.0    -360.0    0.0    inf    1.0
  Esily we see that our Z is exactly same as demand vector D. Why this happend?
 + Case2
+  Input:
+  b=9 8 11 6 7 
+  l=23 23 17 29 14 16 28 17
+  q=270 235 340 200 110 293 174 230
+  s=8 4 9 3 4 
+  A1j=1 9 6 4 3 
+  A2j=2 3 9 0 5 
+  A3j=10 6 10 8 1 
+  A4j=6 1 2 7 4 
+  A5j=3 3 1 1 6 
+  A6j=9 2 7 7 3
+  A7j=1 5 2 9 3 
+  A8j=3 5 7 6 5
+  Output:
+    > Optimal Result:  -914.7843137254902
+    > Parts Ordered
+        j       level  marginal  lower  upper  scale
+    0  j1  170.000000       0.0    0.0    inf    1.0
+    1  j2  117.000000       0.0    0.0    inf    1.0
+    2  j3  195.039216       0.0    0.0    inf    1.0
+    3  j4  159.000000       0.0    0.0    inf    1.0
+    4  j5   98.000000       0.0    0.0    inf    1.0
+    ---------Scenerio 1-----------------
+    - First demand
+        i  value
+    0  i1    5.0
+    1  i2    6.0
+    2  i3    6.0
+    3  i4    8.0
+    4  i5    4.0
+    5  i6    5.0
+    6  i7    5.0
+    7  i8    3.0
+    - The number of units produced
+        i  level      marginal  lower  upper  scale
+    0  i1    5.0  0.000000e+00    0.0    inf    1.0
+    1  i2    6.0  0.000000e+00    0.0    inf    1.0
+    2  i3    6.0  0.000000e+00    0.0    inf    1.0
+    3  i4    8.0  0.000000e+00    0.0    inf    1.0
+    4  i5    0.0  1.400000e+01    0.0    inf    1.0
+    5  i6    5.0  0.000000e+00    0.0    inf    1.0
+    6  i7    0.0  1.776357e-15    0.0    inf    1.0
+    7  i8    0.0  5.980392e-01    0.0    inf    1.0
+    ---------Scenerio 2-----------------
+    - Second demand
+        i  value
+    0  i1    4.0
+    1  i2    6.0
+    2  i3    6.0
+    3  i4    6.0
+    4  i5    4.0
+    5  i6    6.0
+    6  i7    3.0
+    7  i8    3.0
+    - The number of units produced
+        i     level  marginal  lower  upper  scale
+    0  i1  4.000000  0.000000    0.0    inf    1.0
+    1  i2  6.000000  0.000000    0.0    inf    1.0
+    2  i3  6.000000  0.000000    0.0    inf    1.0
+    3  i4  6.000000  0.000000    0.0    inf    1.0
+    4  i5  0.764706  0.000000    0.0    inf    1.0
+    5  i6  6.000000  0.000000    0.0    inf    1.0
+    6  i7  1.137255  0.000000    0.0    inf    1.0
+    7  i8  0.000000  1.401961    0.0    inf    1.0
 
   
   
