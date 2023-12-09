@@ -1,0 +1,78 @@
+from gamspy import Container,Set,Parameter,Variable,Equation,Model,Sum,Sense,Alias
+import numpy as np
+import array as arr
+m=Container()
+#Input: numbers of node V
+n = int(input("V = "))
+
+i=Set(container=m,name="from",records= [f"{str(k)}"for k in range (0,n)])
+
+h=Alias(container=m,name="to",alias_with=i)
+
+#Input: The capacity of links U presented by a n x n matrix
+#All the input must be nonnegative, and if uij = 0 the link (i,j) doesn't exist
+U_matrix=[]
+print ("U = ")
+for k in range (0,n):
+    row_values=input(f"U{k}j = ")
+    U_matrix.append(row_values.split())
+U=Parameter(container=m,name="U",domain=[i,h],records=np.array(U_matrix,dtype=int))
+
+#Input: The penalty of links P presented by a n x n matrix
+P_matrix=[]
+print ("P = ")
+for k in range (0,n):
+    row_values=input(f"P{k}j = ")
+    P_matrix.append(row_values.split())
+P=Parameter(container=m,name="P",domain=[i,h],records=np.array(P_matrix,dtype=int))
+
+#Input: The OD pair(origin-destination)
+s=int(input("s = "))
+t=int(input("t = "))
+#Input: The flow (numbers of units need to be transferred)
+v=int(input("v = "))
+
+#The flow at node d
+#di = -v , Node i is in safe area
+#di = v  , Node i is in dangerous area
+#di = 0 otherwise
+d_vector = arr.array('i',)
+for k in range (0,n):
+    if(k==s): d_vector.append(v)
+    else:
+        if(k==t): d_vector.append(-v)
+        else: d_vector.append(0)
+d=Parameter(container=m,name="d",domain=[i],records=np.array(d_vector))
+
+#The first-stage decision x
+x=Variable(container=m,name="x",domain=[i,h],type="integer")
+
+#Equation
+d_equation=Equation(container=m,name="d_eq",domain=[i])
+u_bound=Equation(container=m,name="u_bound",domain=[i,h])
+x_bound=Equation(container=m,name="x_bound",domain=[i,h])
+
+
+#di = Sum(xij)-Sum(xji)
+d_equation[i]=Sum(h,x[i,h])-Sum(h,x[h,i])==d[i]
+
+#xij<=uij
+u_bound[i,h]=x[i,h]<=U[i,h]
+
+#xij>=0
+x_bound[i,h]=x[i,h]>=0
+
+F=Sum([i,h],P[i,h]*x[i,h])
+
+model1 = Model(container=m,
+               name="model1",
+               equations=[d_equation,u_bound,x_bound],
+               sense=Sense.MIN,
+               objective=F,   
+               problem="MIP")
+
+model1.solve()
+print("Optimal_solution: ",model1.objective_value)
+print("Algorithm time: ",model1.algorithm_time)
+print("x value: ")
+print(x.records)
