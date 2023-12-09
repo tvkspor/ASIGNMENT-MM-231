@@ -1,0 +1,231 @@
+#include <iostream>
+#include <string>
+#include <math.h>
+#include <fstream>
+#include <vector>
+#include<queue>
+using namespace std;
+
+void printMatrix(int** matrix,int n) {
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << matrix[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+void Inversion(int** matrix,int n){
+    int temp;
+    for(int i = 0;i<n-1;i++){
+        for(int j = i+1;j<n;j++){
+            temp = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = temp;
+        }
+    }
+}
+
+
+//Successive_shortest_path_algorithm in network with c is generalized cost matrix, u is the max_capacity matrix, both with size nxn (n is number of Nodes)
+int** Successive_shortest_path(int** c,int** u,int n,int v,int start,int end){
+    if(v<=0||start<0||end<0||start>=n||end>=n) return nullptr;
+    //Create a residual network
+    int current_flow = 0, t = 0;
+    int** pos_c = new int*[n];
+    int** pos_u = new int*[n];
+    int** min_c = new int*[n];
+    int** min_u = new int*[n];
+    queue<int> list;
+    for(int i = 0;i<n;i++){
+        pos_c[i] = new int[n];
+        pos_u[i] = new int[n];
+        min_c[i] = new int[n];
+        min_u[i] = new int[n];
+    }
+    for(int i = 0;i<n;i++){
+        for(int j = 0;j<n;j++){
+            pos_c[i][j] = c[i][j];
+            pos_u[i][j] = u[i][j];
+            min_c[j][i] = -c[i][j];
+            min_u[j][i] = 0;
+        }
+    }
+    printMatrix(pos_c,n);
+    printMatrix(min_c,n);
+    int* distance = new int[n]; // Distance from start Node to each Node
+    bool* has_pass = new bool[n]; // Use to check if we have meet the Node yet in the shortest path algorithm
+    int* parent = new int[n]; // Use for finding the shortest path
+    parent[start] = -1; // The start Node doesn't have parent so we set -1
+    int max_flow;// The max_flow used for each shortest_path found
+    while(current_flow<v){
+        cout<<endl;
+        printMatrix(pos_u,n);
+        cout<<endl;
+        printMatrix(min_u,n);
+        cout<<endl;
+        // Do this while the current flow has not reach v, to find the succesive path
+
+        //Step 1 : Set the distance,has_pass to default
+        for(int i = 0;i<n;i++){
+            has_pass[i] = false;
+        }
+        has_pass[start] = true;
+        distance[start] = 0;
+        list.push(start);
+
+        //Step 2 : Find the shortest path available in the residual network
+        while(!list.empty()){
+            // This step stop when we have find all the available path
+            t = list.front();
+            cout<<t<<" ";
+            list.pop();
+            //Take the first Node out of list
+            for(int i = 0;i<n;i++){
+                    //Check all of other Nodes the t links to (t's children)
+                if(min_u[t][i]>0){
+                    // If there is a link with minus cost
+                    if(!has_pass[i]){
+                        //If the Node i has not been passed until now then set the distance, and i parent's as t, also push i into the list
+                        distance[i] = distance[t] + min_c[t][i];
+                        parent[i] = t;
+                        has_pass[i] = true;
+                        list.push(i);
+                    }else{
+                        //If the Node i has been passed but the distance we achieve now is smaller than the old distance :
+                        if(distance[t]+min_c[t][i]<distance[i]){
+                            //Set the new distance and i's parent as t,also push i into the list
+                                distance[i] = distance[t] + min_c[t][i];
+                                parent[i] = t;
+                                list.push(i);
+                        }
+                    }
+                }else if(pos_u[t][i]>0){
+                    //Else if it has link with positive cost, do the same as the minus-cost link
+                    if(!has_pass[i]){
+                        //If the Node i has not been passed until now then set the distance, and i parent's as t, also push i into the list
+                        distance[i] = distance[t] + pos_c[t][i];
+                        parent[i] = t;
+                        has_pass[i] = true;
+                        list.push(i);
+                    }else{
+                        //If the Node i has been passed but the distance we achieve now is smaller than the old distance :
+                        if(distance[t]+pos_c[t][i]<distance[i]){
+                            //Set the new distance and i's parent as t,also push i into the list
+                                distance[i] = distance[t] + pos_c[t][i];
+                                parent[i] = t;
+                                list.push(i);
+                        }
+                    }
+                }else{}// If no link is available, do nothing
+            }
+        }
+        cout<<endl;
+        if(has_pass[end]){// If has pass end, which means that there exist a shortest path from start to end
+            int temp = end;
+            //We find the path using parent, from end to when parent[i] = -1, which means i is the start
+            if(min_u[parent[temp]][temp]>0){
+                max_flow = min_u[parent[temp]][temp];
+            }else{
+                max_flow = pos_u[parent[temp]][temp];
+            }
+            temp = parent[temp];
+            while(true){
+                if(parent[temp]==-1) break;
+                if(min_u[parent[temp]][temp]>0){
+                    if(max_flow>min_u[parent[temp]][temp]){
+                        max_flow = min_u[parent[temp]][temp];
+                    }
+                }else{
+                    if(max_flow>pos_u[parent[temp]][temp]){
+                        max_flow = pos_u[parent[temp]][temp];
+                    }
+                }
+                temp = parent[temp];
+            }
+            //After finding the max_flow available on the path, we increase the current_flow and change the residual network
+            temp = end;
+            if(current_flow+max_flow>v){
+                max_flow = v - current_flow;
+            }
+            current_flow+= max_flow;
+            while(temp!=start){
+                if(min_u[parent[temp]][temp]>0){
+                    min_u[parent[temp]][temp]-=max_flow;
+                    pos_u[temp][parent[temp]]+=max_flow;
+                }else{
+                    pos_u[parent[temp]][temp]-=max_flow;
+                    min_u[temp][parent[temp]]+=max_flow;
+                }
+                temp = parent[temp];
+            }
+        }else{// If no path was found, stop the program
+            break;
+        }
+    }
+    for(int i = 0;i<n;i++){
+        delete[] pos_c[i];
+        delete[] min_c[i];
+        delete[] pos_u[i];
+    }
+    delete[] pos_c;
+    delete[] min_c;
+    delete[] pos_u;
+    cout<<"Max Flow Available: "<<current_flow<<endl;
+    Inversion(min_u,n);
+    return min_u;
+}
+
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+void readInput(string filename,int** & c_input,int** & u_input,int & n,int & origin,int& destination,int & flow) {
+    ifstream inputFile(filename);
+
+    if (inputFile.is_open()) {
+        inputFile >> n;
+        c_input = new int*[n];
+        u_input = new int*[n];
+        for (int i = 0; i < n; i++) {
+                c_input[i] = new int[n];
+            for (int j = 0; j < n; j++) {
+                inputFile >> c_input[i][j];
+            }
+        }
+        for (int i = 0; i < n; i++) {
+                u_input[i] = new int[n];
+            for (int j = 0; j < n; j++) {
+                inputFile >> u_input[i][j];
+            }
+        }
+        inputFile >> origin;
+        inputFile >> destination;
+        inputFile >> flow;
+        inputFile.close();
+    }
+    else {
+        cout << "Failed to open the file." << endl;
+    }
+}
+
+
+
+int main() {
+    string filename = "test.txt";
+    int** c = nullptr;
+    int** u = nullptr;
+    int n = 0,origin,destination,flow;
+    readInput(filename,c,u,n,origin,destination,flow);
+    cout<<"Finding the successive shortest path algorithm in a network with "<<n<<" nodes from "<<origin<<" to "<<destination<<"..."<<endl<<endl;
+    printMatrix(c,n);
+    cout<<endl;
+    printMatrix(u,n);
+    cout<<endl;
+    int** result = Successive_shortest_path(c,u,n,flow,origin,destination);
+    printMatrix(result,n);
+    return 0;
+}
