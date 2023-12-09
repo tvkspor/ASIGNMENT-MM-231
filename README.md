@@ -3,8 +3,8 @@ We consider these cases to cover the problem.
 + Case1: If the firm is a thriving business:
   Input:
     b = 1 2 3 4 5
-    l = 10 20 30 40 50 60 70 80 90
-    q = 100 200 300 400 500 600 700 800 900
+    l = 10 20 30 40 50 60 70 80 
+    q = 100 200 300 400 500 600 700 800 
     s = 0 1 2 3 4
     A1j = 4 5 4 6 3
     A2j = 6 3 5 6 3
